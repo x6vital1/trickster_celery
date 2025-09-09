@@ -44,7 +44,6 @@ r = _LoopLocalRedis(
     host=REDIS_HOST,
     port=REDIS_PORT,
     db=REDIS_DB_BROKER,
-    username=REDIS_USER,
     password=REDIS_PASS,
     ssl=REDIS_SSL,
     decode_responses=True,
