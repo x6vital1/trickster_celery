@@ -3,31 +3,19 @@ import asyncio
 import weakref
 import redis.asyncio as aioredis
 
-from worker.settings import BROKER_URL, ENVIRONMENT, REDIS_HOST, REDIS_PORT, REDIS_PASS, REDIS_USER, REDIS_DB_BROKER
+from worker.settings import BROKER_URL
 
 
 class _LoopLocalRedis:
-    def __init__(self, url: str, **kwargs):
-        self.url = url
+    def __init__(self, client: aioredis.Redis, **kwargs):
+        self.client = client
         self.kwargs = kwargs
         self._clients = weakref.WeakKeyDictionary()  # loop -> Redis
 
     def _client(self) -> aioredis.Redis:
         loop = asyncio.get_running_loop()
         client = self._clients.get(loop)
-        if client is None:
-            if ENVIRONMENT == "development":
-                client = aioredis.from_url(self.url, **self.kwargs)
-            elif ENVIRONMENT == "production":
-                client = aioredis.Redis(
-                    host=REDIS_HOST,
-                    port=REDIS_PORT,
-                    db=REDIS_DB_BROKER,
-                    username=REDIS_USER,
-                    password=REDIS_PASS,
-                    decode_responses=True,
-                )
-            self._clients[loop] = client
+        self._clients[loop] = client
         return client
 
     def __getattr__(self, name):

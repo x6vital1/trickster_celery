@@ -1,21 +1,22 @@
 import os
 from urllib.parse import quote
+import redis.asyncio as aioredis
 
-def redis_url(
-    host: str,
-    port: int = 6379,
-    db: int = 0,
-    password: str | None = None,
-    username: str | None = None,
-    ssl: bool = False,
-) -> str:
-    scheme = "rediss" if ssl else "redis"
-    auth = ""
-    if username and password:
-        auth = f"{quote(username)}:{quote(password)}@"
-    elif password:
-        auth = f":{quote(password)}@"
-    return f"{scheme}://{auth}{host}:{port}/{db}"
+# def redis_url(
+#     host: str,
+#     port: int = 6379,
+#     db: int = 0,
+#     password: str | None = None,
+#     username: str | None = None,
+#     ssl: bool = False,
+# ) -> str:
+#     scheme = "rediss" if ssl else "redis"
+#     auth = ""
+#     if username and password:
+#         auth = f"{quote(username)}:{quote(password)}@"
+#     elif password:
+#         auth = f":{quote(password)}@"
+#     return f"{scheme}://{auth}{host}:{port}/{db}"
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
@@ -25,12 +26,19 @@ REDIS_PASS = os.getenv("REDIS_PASS")
 
 ENVIRONMENT=os.getenv("ENVIRONMENT", "development")
 
-
-
-BROKER_URL = redis_url(
-    host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB_BROKER,
-    username=REDIS_USER, password=REDIS_PASS,
+BROKER_URL = aioredis.Redis(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    db=REDIS_DB_BROKER,
+    username=REDIS_USER,
+    password=REDIS_PASS,
+    decode_responses=True,
 )
+
+# BROKER_URL = redis_url(
+#     host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB_BROKER,
+#     username=REDIS_USER, password=REDIS_PASS,
+# )
 
 API_BASE = os.getenv("API_BASE", "http://host.docker.internal:8080").rstrip("/")
 EMAIL_API_KEY = os.getenv("EMAIL_API_KEY", "3831b9faf5db89911585a580a8afb3d7c2a36067568e64c5d628062488d28c02")
