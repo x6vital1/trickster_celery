@@ -45,5 +45,6 @@ def _build_redis_dsn(db: int) -> str:
     return f"{scheme}://{auth}{REDIS_HOST}:{REDIS_PORT}/{db}"
 
 # Эти строки используются только при инициализации Celery
-BROKER_URL = _build_redis_dsn(REDIS_DB_BROKER)
-RESULT_BACKEND = _build_redis_dsn(REDIS_DB_BACKEND)  # если нужен backend
+BROKER_DSN = _build_redis_dsn(REDIS_DB_BROKER)
+RESULT_BACKEND = _build_redis_dsn(REDIS_DB_BACKEND)
+  # если нужен backend
