@@ -16,9 +16,6 @@ VERIFY_TLS = os.getenv("EMAIL_API_VERIFY_TLS", "true").lower() not in {"0", "fal
 ALLOCATE_TIMEOUT = int(os.getenv("EMAIL_API_ALLOCATE_TIMEOUT", "30"))
 MESSAGES_TIMEOUT = int(os.getenv("EMAIL_API_MESSAGES_TIMEOUT", "15"))
 
-# ❌ УБРАНО: глобальный клиент
-# client = httpx.AsyncClient(...)
-
 HEADERS = {EMAIL_API_KEY_HEADER: EMAIL_API_KEY} if EMAIL_API_KEY else {}
 
 def _url(path: str) -> str:

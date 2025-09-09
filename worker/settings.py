@@ -13,7 +13,7 @@ def redis_url(
     auth = ""
     if username and password:
         auth = f"{quote(username)}:{quote(password)}@"
-    elif password:  # без ACL
+    elif password:
         auth = f":{quote(password)}@"
     return f"{scheme}://{auth}{host}:{port}/{db}"
 
@@ -21,8 +21,9 @@ REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 REDIS_DB_BROKER = int(os.getenv("REDIS_DB_BROKER", "0"))
 REDIS_DB_BACKEND = int(os.getenv("REDIS_DB_BACKEND", "1"))
-REDIS_USER = os.getenv("REDIS_USER")          # если используешь ACL
-REDIS_PASS = os.getenv("REDIS_PASS")          # пароль
+REDIS_USER = os.getenv("REDIS_USER")
+REDIS_PASS = os.getenv("REDIS_PASS")
+
 
 
 

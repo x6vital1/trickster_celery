@@ -1,17 +1,12 @@
-# worker/redis_store.py
-
 import os
 import asyncio
 import weakref
 import redis.asyncio as aioredis
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+from settings import BROKER_URL
+
 
 class _LoopLocalRedis:
-    """
-    Делегирует вызовы к Redis-клиенту, привязанному к текущему event loop.
-    Позволяет вызывать: await r.hset(...), await r.hget(...), и т.д.
-    """
     def __init__(self, url: str, **kwargs):
         self.url = url
         self.kwargs = kwargs
@@ -26,18 +21,15 @@ class _LoopLocalRedis:
         return client
 
     def __getattr__(self, name):
-        # Делегируем метод текущему клиенту
         return getattr(self._client(), name)
 
     async def aclose(self):
-        # Опционально: закрыть клиент текущего loop'а
         loop = asyncio.get_running_loop()
         client = self._clients.get(loop)
         if client is not None:
             await client.aclose()
 
-# Экспортируем r с прежним именем
-r = _LoopLocalRedis(REDIS_URL, decode_responses=True)
+r = _LoopLocalRedis(BROKER_URL, decode_responses=True)
 
 # Ключи как и раньше
 def job_key(job_id: str) -> str: return f"job:{job_id}"
