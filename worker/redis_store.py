@@ -3,7 +3,7 @@ import asyncio
 import weakref
 import redis.asyncio as aioredis
 
-from settings import BROKER_URL
+from worker.settings import BROKER_URL
 
 
 class _LoopLocalRedis:
