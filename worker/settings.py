@@ -20,10 +20,10 @@ def redis_url(
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 REDIS_DB_BROKER = int(os.getenv("REDIS_DB_BROKER", "0"))
-REDIS_DB_BACKEND = int(os.getenv("REDIS_DB_BACKEND", "1"))
 REDIS_USER = os.getenv("REDIS_USER")
 REDIS_PASS = os.getenv("REDIS_PASS")
 
+ENVIRONMENT=os.getenv("ENVIRONMENT", "development")
 
 
 
