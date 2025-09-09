@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  redis:
+    image: redis:7
+    command: ["redis-server","--appendonly","yes","--appendfsync","everysec"]
+    ports: ["6379:6379"]
+
+  worker:
+    build: .
+    environment:
+      - BROKER_URL=redis://redis:6379/0
+      - EMAIL_API_BASE=http://host.docker.internal:8080
+      - EMAIL_API_KEY=3831b9faf5db89911585a580a8afb3d7c2a36067568e64c5d628062488d28c02
+      - ALLOCATE_CHUNK=100
+      - ALLOCATE_PAUSE_SEC=0.3
+      - MAIL_WAIT_TIMEOUT_SEC=90
+      - MESSAGE_TTL_SEC=259200
+    depends_on: [redis]
