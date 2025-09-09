@@ -1,6 +1,7 @@
 from celery import Celery
 from worker.settings import BROKER_URL
 
+print(BROKER_URL)
 app = Celery("trickster_worker", broker=BROKER_URL)
 
 app.conf.update(
