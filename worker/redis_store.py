@@ -42,6 +42,7 @@ class _LoopLocalRedis:
 # Единый экземпляр для брокерной БД (если нужна другая БД — создай ещё один)
 r = _LoopLocalRedis(
     host=REDIS_HOST,
+    username=REDIS_USER,
     port=REDIS_PORT,
     db=REDIS_DB_BROKER,
     password=REDIS_PASS,
