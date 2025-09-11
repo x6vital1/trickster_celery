@@ -4,6 +4,8 @@ import redis.asyncio as aioredis
 from worker.settings import (
     REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASS, REDIS_DB_BROKER, REDIS_SSL
 )
+from redis.asyncio import Redis as RedisType
+from typing import cast
 
 class _LoopLocalRedis:
     """
@@ -40,7 +42,7 @@ class _LoopLocalRedis:
             await client.aclose()
 
 # Единый экземпляр для брокерной БД (если нужна другая БД — создай ещё один)
-r = _LoopLocalRedis(
+_r = _LoopLocalRedis(
     host=REDIS_HOST,
     username=REDIS_USER,
     port=REDIS_PORT,
@@ -49,8 +51,11 @@ r = _LoopLocalRedis(
     ssl=REDIS_SSL,
     decode_responses=True,
 )
+r: RedisType = cast(RedisType, _r)
 
 # Ключи как и раньше
 def job_key(job_id: str) -> str: return f"job:{job_id}"
 def task_key(job_id: str, item_id: int) -> str: return f"task:{job_id}:{item_id}"
 def mbox_list_key(box_id: str) -> str: return f"mbox:{box_id}:messages"
+def wait_lock_key(job_id: str, item_id: int) -> str:
+    return f"lock:wait:{job_id}:{item_id}"

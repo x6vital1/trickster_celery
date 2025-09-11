@@ -2,7 +2,7 @@ import uuid
 import asyncio
 import datetime as dt
 from celery import shared_task
-from worker.redis_store import r, job_key, task_key, mbox_list_key
+from worker.redis_store import r, job_key, task_key, mbox_list_key, wait_lock_key
 from worker.settings import MESSAGE_TTL_SEC, MAIL_WAIT_TIMEOUT_SEC, ALLOCATE_PAUSE_SEC
 from worker.email_client import allocate_one, wait_code
 
@@ -91,7 +91,9 @@ async def _wait_for_code_async(box_id: str, job_id: str, item_id: int):
             "updated_at": now_iso()
         })
     finally:
+        await r.delete(wait_lock_key(job_id, item_id))
         await _after_item_done(job_id)
+        await r.aclose()
 
 
 async def _after_item_done(job_id: str):

@@ -45,18 +45,20 @@ def _html_to_text(html: str) -> str:
     return _ws_re.sub(" ", unescape(_tag_re.sub(" ", html))).strip()
 
 async def wait_code(box_id: str, timeout_sec: int = MAIL_WAIT_TIMEOUT_SEC) -> Dict:
-    start_time = asyncio.get_event_loop().time()
+    loop = asyncio.get_event_loop()
+    start = loop.time()
     url = _url(f"/v1/email/{box_id}/code")
-    attempt = 0
+    attempt, delay = 0, 2
+
     async with httpx.AsyncClient(verify=VERIFY_TLS, headers=HEADERS, follow_redirects=True) as client:
-        while asyncio.get_event_loop().time() - start_time < timeout_sec:
+        while loop.time() - start < timeout_sec:
             attempt += 1
-            remaining_time = timeout_sec - (asyncio.get_event_loop().time() - start_time)
-            if remaining_time <= 0:
+            remaining = timeout_sec - (loop.time() - start)
+            if remaining <= 0:
                 break
 
             try:
-                request_timeout = min(MESSAGES_TIMEOUT, max(1, int(remaining_time)))
+                request_timeout = min(MESSAGES_TIMEOUT, max(1, int(remaining)))
                 resp = await client.get(url, timeout=request_timeout)
                 resp.raise_for_status()
                 data = resp.json()
@@ -84,6 +86,10 @@ async def wait_code(box_id: str, timeout_sec: int = MAIL_WAIT_TIMEOUT_SEC) -> Di
 
             except httpx.RequestError as e:
                 print(f"Attempt {attempt}: request failed {e}, retrying...")
-                await asyncio.sleep(min(POLL_INTERVAL_SEC, remaining_time))
+                await asyncio.sleep(min(POLL_INTERVAL_SEC, remaining))
                 continue
+
+            await asyncio.sleep(min(delay, remaining))
+            delay = min(int(delay * 1.5), 10)
+
     raise TimeoutError(f"Code wait timeout for box_id={box_id} after {timeout_sec}s. Attempts={attempt}")

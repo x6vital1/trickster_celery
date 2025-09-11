@@ -20,7 +20,7 @@ REDIS_DB_BROKER  = int(os.getenv("REDIS_DB_BROKER", "0"))  # Celery broker
 REDIS_DB_BACKEND = int(os.getenv("REDIS_DB_BACKEND", "1")) # Celery result backend (опц.)
 
 # Сервисные ключи/URL-ы
-API_BASE = (os.getenv("API_BASE", "https://api.trickster-shop.cloud") or "").rstrip("/")
+API_BASE = (os.getenv("EMAIL_API_BASE", "https://api.trickster-shop.cloud") or "").rstrip("/")
 EMAIL_API_KEY = os.getenv("EMAIL_API_KEY", "")
 EMAIL_API_KEY_HEADER = os.getenv("EMAIL_API_KEY_HEADER", "api-key")
 
