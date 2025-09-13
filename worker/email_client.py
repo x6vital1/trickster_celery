@@ -4,7 +4,7 @@ import re
 import uuid
 from html import unescape
 from typing import Dict
-
+from worker.erros import MessageTimeout
 import httpx
 
 from worker.settings import (
@@ -92,4 +92,4 @@ async def wait_code(box_id: str, timeout_sec: int = MAIL_WAIT_TIMEOUT_SEC) -> Di
             await asyncio.sleep(min(delay, remaining))
             delay = min(int(delay * 1.5), 10)
 
-    raise TimeoutError(f"Code wait timeout for box_id={box_id} after {timeout_sec}s. Attempts={attempt}")
+    raise MessageTimeout(box_id, timeout_sec, attempt)

@@ -3,6 +3,7 @@ import asyncio
 import datetime as dt
 from celery import shared_task
 from worker.redis_store import r, job_key, task_key, mbox_list_key, wait_lock_key
+from worker.erros import MessageTimeout
 from worker.settings import MESSAGE_TTL_SEC, MAIL_WAIT_TIMEOUT_SEC, ALLOCATE_PAUSE_SEC
 from worker.email_client import allocate_one, wait_code
 
@@ -84,6 +85,13 @@ async def _wait_for_code_async(box_id: str, job_id: str, item_id: int):
             "msg_id": msg_id,
             "updated_at": now_iso()
         })
+    except MessageTimeout as e:
+        await r.hset(task_key(job_id, item_id), mapping={
+            "state": "code_timeout",
+            "error": str(e),
+            "updated_at": now_iso()
+        })
+
     except Exception as e:
         await r.hset(task_key(job_id, item_id), mapping={
             "state": "failed",
