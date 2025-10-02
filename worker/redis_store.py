@@ -1,7 +1,7 @@
 import asyncio
 import weakref
 import redis.asyncio as aioredis
-from settings import settings
+from worker.settings import settings
 from redis.asyncio import Redis as RedisType
 from typing import cast
 

@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = 'development'
     REDIS_HOST: str = 'localhost'
     REDIS_PORT: int = 6379
-    REDIS_USER: str
-    REDIS_PASS: str
+    REDIS_USER: str | None = None
+    REDIS_PASS: str | None = None
     REDIS_SSL: bool = False
     REDIS_DB_BROKER: int = 0
     REDIS_DB_BACKEND: int = 1

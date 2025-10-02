@@ -1,5 +1,4 @@
 import asyncio
-import os
 import re
 import uuid
 from html import unescape
@@ -7,7 +6,7 @@ from typing import Dict
 from worker.erros import MessageTimeout
 import httpx
 
-from settings import settings
+from worker.settings import settings
 
 HEADERS = {settings.EMAIL_API_KEY_HEADER: settings.EMAIL_API_KEY} if settings.EMAIL_API_KEY else {}
 

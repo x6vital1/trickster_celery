@@ -1,5 +1,5 @@
 from celery import Celery
-from settings import settings
+from worker.settings import settings
 
 if settings.ENVIRONMENT == 'development':
     app = Celery("trickster_worker", broker=settings.REDIS_HOST)

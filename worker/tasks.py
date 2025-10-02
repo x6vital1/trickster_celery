@@ -3,7 +3,7 @@ import datetime as dt
 from celery import shared_task
 from worker.redis_store import r, job_key, task_key, mbox_list_key, wait_lock_key
 from worker.erros import MessageTimeout
-from settings import settings
+from worker.settings import settings
 from worker.email_client import allocate_one, wait_code
 
 MAX_CONCURRENT_ALLOCATIONS = 10
