@@ -1,10 +1,7 @@
 from celery import Celery
 from worker.settings import settings
 
-if settings.ENVIRONMENT == 'development':
-    app = Celery("trickster_worker", broker=settings.REDIS_HOST)
-else:
-    app = Celery("trickster_worker", broker=settings.REDIS_URL)
+app = Celery("trickster_worker", broker=settings.REDIS_URL)
 
 app.conf.update(
     task_default_queue="emailq",

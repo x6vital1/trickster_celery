@@ -33,7 +33,7 @@ class Settings(BaseSettings):
         user = quote(self.REDIS_USER) if self.REDIS_USER else ""
         pw = f":{quote(self.REDIS_PASS)}" if self.REDIS_PASS else ""
         auth = f"{user}{pw}@" if (user or pw) else ""
-        return f"redis://{auth}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+        return f"redis://{auth}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB_BROKER}"
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env'),
