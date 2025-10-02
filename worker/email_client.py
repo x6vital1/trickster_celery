@@ -7,28 +7,24 @@ from typing import Dict
 from worker.erros import MessageTimeout
 import httpx
 
-from worker.settings import (
-    API_BASE, EMAIL_API_KEY, EMAIL_API_KEY_HEADER,
-    MAIL_WAIT_TIMEOUT_SEC, POLL_INTERVAL_SEC
-)
+from settings import settings
 
-VERIFY_TLS = os.getenv("EMAIL_API_VERIFY_TLS", "true").lower() not in {"0", "false", "no"}
-ALLOCATE_TIMEOUT = int(os.getenv("EMAIL_API_ALLOCATE_TIMEOUT", "30"))
-MESSAGES_TIMEOUT = int(os.getenv("EMAIL_API_MESSAGES_TIMEOUT", "15"))
+HEADERS = {settings.EMAIL_API_KEY_HEADER: settings.EMAIL_API_KEY} if settings.EMAIL_API_KEY else {}
 
-HEADERS = {EMAIL_API_KEY_HEADER: EMAIL_API_KEY} if EMAIL_API_KEY else {}
 
 def _url(path: str) -> str:
     if not path.startswith("/"):
         path = "/" + path
-    return API_BASE + path
+    return settings.API_BASE + path
+
 
 async def allocate_one(site: str, domain: str) -> dict:
-    async with httpx.AsyncClient(verify=VERIFY_TLS, headers=HEADERS, follow_redirects=True) as client:
+    async with httpx.AsyncClient(verify=settings.EMAIL_API_VERIFY_TLS, headers=HEADERS,
+                                 follow_redirects=True) as client:
         resp = await client.post(
             _url("/v1/email/allocate"),
             params={"site": site, "domain": domain},
-            timeout=ALLOCATE_TIMEOUT
+            timeout=settings.EMAIL_API_ALLOCATE_TIMEOUT
         )
         resp.raise_for_status()
         data = resp.json()
@@ -38,19 +34,23 @@ async def allocate_one(site: str, domain: str) -> dict:
             raise ValueError(f"bad allocate response: {data}")
         return {"email": str(email), "box_id": str(box_id)}
 
+
 _tag_re = re.compile(r"<[^>]+>")
 _ws_re = re.compile(r"\s+")
+
 
 def _html_to_text(html: str) -> str:
     return _ws_re.sub(" ", unescape(_tag_re.sub(" ", html))).strip()
 
-async def wait_code(box_id: str, timeout_sec: int = MAIL_WAIT_TIMEOUT_SEC) -> Dict:
+
+async def wait_code(box_id: str, timeout_sec: int = settings.MAIL_WAIT_TIMEOUT_SEC) -> Dict:
     loop = asyncio.get_event_loop()
     start = loop.time()
     url = _url(f"/v1/email/{box_id}/code")
     attempt, delay = 0, 2
 
-    async with httpx.AsyncClient(verify=VERIFY_TLS, headers=HEADERS, follow_redirects=True) as client:
+    async with httpx.AsyncClient(verify=settings.EMAIL_API_VERIFY_TLS, headers=HEADERS,
+                                 follow_redirects=True) as client:
         while loop.time() - start < timeout_sec:
             attempt += 1
             remaining = timeout_sec - (loop.time() - start)
@@ -58,7 +58,7 @@ async def wait_code(box_id: str, timeout_sec: int = MAIL_WAIT_TIMEOUT_SEC) -> Di
                 break
 
             try:
-                request_timeout = min(MESSAGES_TIMEOUT, max(1, int(remaining)))
+                request_timeout = min(settings.EMAIL_API_MESSAGES_TIMEOUT, max(1, int(remaining)))
                 resp = await client.get(url, timeout=request_timeout)
                 resp.raise_for_status()
                 data = resp.json()
@@ -86,7 +86,7 @@ async def wait_code(box_id: str, timeout_sec: int = MAIL_WAIT_TIMEOUT_SEC) -> Di
 
             except httpx.RequestError as e:
                 print(f"Attempt {attempt}: request failed {e}, retrying...")
-                await asyncio.sleep(min(POLL_INTERVAL_SEC, remaining))
+                await asyncio.sleep(min(settings.POLL_INTERVAL_SEC, remaining))
                 continue
 
             await asyncio.sleep(min(delay, remaining))

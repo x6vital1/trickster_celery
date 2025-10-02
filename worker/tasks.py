@@ -1,10 +1,9 @@
-import uuid
 import asyncio
 import datetime as dt
 from celery import shared_task
 from worker.redis_store import r, job_key, task_key, mbox_list_key, wait_lock_key
 from worker.erros import MessageTimeout
-from worker.settings import MESSAGE_TTL_SEC, MAIL_WAIT_TIMEOUT_SEC, ALLOCATE_PAUSE_SEC
+from settings import settings
 from worker.email_client import allocate_one, wait_code
 
 MAX_CONCURRENT_ALLOCATIONS = 10
@@ -58,8 +57,8 @@ async def _allocate_batch_async(site: str, domain: str, job_id: str, total: int)
         end = min(start + CHUNK_SIZE, total)
         tasks_chunk = [handle_item(i) for i in range(start, end)]
         await asyncio.gather(*tasks_chunk)
-        if ALLOCATE_PAUSE_SEC > 0:
-            await asyncio.sleep(ALLOCATE_PAUSE_SEC)
+        if settings.ALLOCATE_PAUSE_SEC > 0:
+            await asyncio.sleep(settings.ALLOCATE_PAUSE_SEC)
 
 @shared_task(name="tasks.wait_for_code", max_retries=0)
 def wait_for_code(box_id: str, job_id: str, item_id: int):
@@ -67,7 +66,7 @@ def wait_for_code(box_id: str, job_id: str, item_id: int):
 
 async def _wait_for_code_async(box_id: str, job_id: str, item_id: int):
     try:
-        msg = await wait_code(box_id=box_id, timeout_sec=MAIL_WAIT_TIMEOUT_SEC)
+        msg = await wait_code(box_id=box_id, timeout_sec=settings.MAIL_WAIT_TIMEOUT_SEC)
         msg_id = msg["msg_id"]
 
         record = {"box_id": msg["box_id"], "ts": now_iso()}
@@ -77,8 +76,8 @@ async def _wait_for_code_async(box_id: str, job_id: str, item_id: int):
 
         await r.hset(msg_id, mapping=record)
         await r.rpush(mbox_list_key(box_id), msg_id)
-        await r.expire(msg_id, MESSAGE_TTL_SEC)
-        await r.expire(mbox_list_key(box_id), MESSAGE_TTL_SEC)
+        await r.expire(msg_id, settings.MESSAGE_TTL_SEC)
+        await r.expire(mbox_list_key(box_id), settings.MESSAGE_TTL_SEC)
 
         await r.hset(task_key(job_id, item_id), mapping={
             "state": "message_received",

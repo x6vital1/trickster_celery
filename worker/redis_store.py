@@ -1,9 +1,7 @@
 import asyncio
 import weakref
 import redis.asyncio as aioredis
-from worker.settings import (
-    REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASS, REDIS_DB_BROKER, REDIS_SSL
-)
+from settings import settings
 from redis.asyncio import Redis as RedisType
 from typing import cast
 
@@ -43,12 +41,12 @@ class _LoopLocalRedis:
 
 # Единый экземпляр для брокерной БД (если нужна другая БД — создай ещё один)
 _r = _LoopLocalRedis(
-    host=REDIS_HOST,
-    username=REDIS_USER,
-    port=REDIS_PORT,
-    db=REDIS_DB_BROKER,
-    password=REDIS_PASS,
-    ssl=REDIS_SSL,
+    host=settings.REDIS_HOST,
+    username=settings.REDIS_USER,
+    port=settings.REDIS_PORT,
+    db=settings.REDIS_DB_BROKER,
+    password=settings.REDIS_PASS,
+    ssl=settings.REDIS_SSL,
     decode_responses=True,
 )
 r: RedisType = cast(RedisType, _r)
