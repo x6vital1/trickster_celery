@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     REDIS_DB_BROKER: int = 0
     REDIS_DB_BACKEND: int = 1
 
-    API_BASE: str = 'https://api.trickster-shop.cloud'
+    API_BASE: str = 'http://127.0.0.1:8080'
     EMAIL_API_KEY: str
     EMAIL_API_KEY_HEADER: str = 'api-key'
 

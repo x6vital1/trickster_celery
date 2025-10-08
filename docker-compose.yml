@@ -9,7 +9,7 @@ services:
     build: .
     environment:
       - REDIS_HOST=redis
-      - EMAIL_API_BASE=http://host.docker.internal:8080
+      - API_BASE=http://host.docker.internal:8080
       - EMAIL_API_KEY=3831b9faf5db89911585a580a8afb3d7c2a36067568e64c5d628062488d28c02
       - ALLOCATE_CHUNK=100
       - ALLOCATE_PAUSE_SEC=0.3
